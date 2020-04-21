@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/types"
+	"github.com/algorand/oapi-codegen/pkg/types"
 	"github.com/labstack/echo/v4"
 )
 
