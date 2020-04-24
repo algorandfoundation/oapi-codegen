@@ -2903,53 +2903,53 @@ func RegisterHandlers(router interface {
 	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 	TRACE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-}, si ServerInterface) {
+}, si ServerInterface, m ...echo.MiddlewareFunc) {
 
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
 
-	router.GET("/contentObject/:param", wrapper.GetContentObject)
-	router.GET("/cookie", wrapper.GetCookie)
-	router.GET("/header", wrapper.GetHeader)
-	router.GET("/labelExplodeArray/:param", wrapper.GetLabelExplodeArray)
-	router.GET("/labelExplodeObject/:param", wrapper.GetLabelExplodeObject)
-	router.GET("/labelNoExplodeArray/:param", wrapper.GetLabelNoExplodeArray)
-	router.GET("/labelNoExplodeObject/:param", wrapper.GetLabelNoExplodeObject)
-	router.GET("/matrixExplodeArray/:id", wrapper.GetMatrixExplodeArray)
-	router.GET("/matrixExplodeObject/:id", wrapper.GetMatrixExplodeObject)
-	router.GET("/matrixNoExplodeArray/:id", wrapper.GetMatrixNoExplodeArray)
-	router.GET("/matrixNoExplodeObject/:id", wrapper.GetMatrixNoExplodeObject)
-	router.GET("/passThrough/:param", wrapper.GetPassThrough)
-	router.GET("/queryForm", wrapper.GetQueryForm)
-	router.GET("/simpleExplodeArray/:param", wrapper.GetSimpleExplodeArray)
-	router.GET("/simpleExplodeObject/:param", wrapper.GetSimpleExplodeObject)
-	router.GET("/simpleNoExplodeArray/:param", wrapper.GetSimpleNoExplodeArray)
-	router.GET("/simpleNoExplodeObject/:param", wrapper.GetSimpleNoExplodeObject)
-	router.GET("/simplePrimitive/:param", wrapper.GetSimplePrimitive)
+	router.GET("/contentObject/:param", wrapper.GetContentObject, m...)
+	router.GET("/cookie", wrapper.GetCookie, m...)
+	router.GET("/header", wrapper.GetHeader, m...)
+	router.GET("/labelExplodeArray/:param", wrapper.GetLabelExplodeArray, m...)
+	router.GET("/labelExplodeObject/:param", wrapper.GetLabelExplodeObject, m...)
+	router.GET("/labelNoExplodeArray/:param", wrapper.GetLabelNoExplodeArray, m...)
+	router.GET("/labelNoExplodeObject/:param", wrapper.GetLabelNoExplodeObject, m...)
+	router.GET("/matrixExplodeArray/:id", wrapper.GetMatrixExplodeArray, m...)
+	router.GET("/matrixExplodeObject/:id", wrapper.GetMatrixExplodeObject, m...)
+	router.GET("/matrixNoExplodeArray/:id", wrapper.GetMatrixNoExplodeArray, m...)
+	router.GET("/matrixNoExplodeObject/:id", wrapper.GetMatrixNoExplodeObject, m...)
+	router.GET("/passThrough/:param", wrapper.GetPassThrough, m...)
+	router.GET("/queryForm", wrapper.GetQueryForm, m...)
+	router.GET("/simpleExplodeArray/:param", wrapper.GetSimpleExplodeArray, m...)
+	router.GET("/simpleExplodeObject/:param", wrapper.GetSimpleExplodeObject, m...)
+	router.GET("/simpleNoExplodeArray/:param", wrapper.GetSimpleNoExplodeArray, m...)
+	router.GET("/simpleNoExplodeObject/:param", wrapper.GetSimpleNoExplodeObject, m...)
+	router.GET("/simplePrimitive/:param", wrapper.GetSimplePrimitive, m...)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9xZyW7jOBD9FaNmTgO15e6+6dYIZgkwWWacwwCBD4xUtpmRRIakAxuG/r1BarG1WKYS",
-	"WXZyi6VaXj0+VcjiFnwWcRZjrCR4WxAoOYslmh9TGvEQ/80e6Sc+ixXGSv+pcK1cHhIa61/SX2JEzPMN",
-	"R/BAKkHjBSRJ4kCA0heUK8pi8ODHSJq4ozzXiD09o69Am6ZxTPYrpq3Wd+lLbwtcMI5C0RTcddCQzYGd",
-	"+a8C5+DBL+6uQjcL797tMgp8WVGBAXiPubOjg89Kwcq551RIdUsibIQgWNj0opLLWDl7oWaGKxrPmXYO",
-	"qY8Z6bFJBDfXDzq6okqHhweUajRF8YoCHHhFIVN6v44n44k2ZBxjwil48H08GX8FBzhRS4PfzdYxrc/d",
-	"ciJIlOg3CzTl6mKJXi/NMvyJ6mrfwYQSJEKFQoL3WNIF4TykvnF2nyWrqKNtUcoLnrEBnoENTk6DyQz7",
-	"XCqxwmTmlLX7bTI5lK+wcysCT0xO12fsf4rtbBiLGg1loXNBI6roqzbENQ9ZgODNSSgxK8zPw+SllcrK",
-	"LHfczZmIiAIPaKy+fwMnFxiNFS5QaIVZQdB8HUCA/UPI0gYjIgTZ2OIg7TiowkhaASqepOkbANZwtS3R",
-	"gLgK4lj+0Vkxx9oR2nXFKpY6hDaSeoJwqqZSLs1PDXYsN5bkN9SUzEy7WCIJULS1i79Si/e2i2UeJsP0",
-	"35f7PZdhG0cLli+/Z8I9TyupI/uhrS1RDdZYDsC8tPZSh5l+SZZ0nqLbHIL08ZtOvbIs0MEKsxYUkicM",
-	"sxUxMnK3Y9Nrfmvd1P1ddau3qCZN2OzH+lGtA1JtzG7XVAg97fIckKsoImIDXrwKwxqF+ba4K4eHdsd9",
-	"kGij36HpumVNmjtOV9mvha/9z/7zqq6go6y7DjweFd57iLww5UVECbquCI8G7V/pTc3pLV8pDU6uuLS6",
-	"wfgrFNeJwLf3uSMMdpPaUFzV2hwNLLjqocl9Ir3Ve1w3Et/R4T6Y5jiR8mEp2GqxtBnM3e/MW8dyHca1",
-	"Zxm6vaxQbP5gImor9p/C6MhZ2uqkaFIOMXPayUe7QseTYgXm+VDanRirrJ5hHlWBcBIEBRnHJiVVPgYa",
-	"8rbw0QeCcx6TK+U0j+b660zpbVV5C2BxMJzW3C73dJ2WeMr/aiUSS9dOHVi8nPP1UIRVt57H9wPTBr8L",
-	"PmEPTqT9lee0yfEizthDkVaM9O3p2r+RqBD1JmIspHUaVkzvl+Z6PYW/EiF4sFSKe66b3a0rlGocIPKI",
-	"8DGhkMySnwEAAP//njtWvlEhAAA=",
+	"H4sIAAAAAAAC/9xZSW/rNhD+K8a0p0LP8nvvpttD0CVAs7TOoUDgAyONbaaSyJB0YMPQfy9ILdZmWbLN",
+	"2OktkWbmm/n0zZjLFnwWcRZjrCR4WxAoOYslmn+mNOIh/p090k98FiuMlf5T4Vq5PCQ01v9Jf4kRMc83",
+	"HMEDqQSNF5AkiQMBSl9QriiLwYMfI2nijnKsEXt5RV+BNk3jGPQbpq3WD+lLbwtcMI5C0TS526AFzYGd",
+	"+c8C5+DBT+6uQjcL7z7sEAW+rajAALzn3NnRwWeVYFXsORVS3ZMIW1MQLGx7UcMyVk4p1MxwReM5084h",
+	"9TEjPTZAcHf7pKMrqnR4eEKpRlMU7yjAgXcUMqX363gynmhDxjEmnIIH38eT8VdwgBO1NPm72XdM63O3",
+	"nAgSJfrNAk25uliiv5dmGX5HdVN2MKEEiVChkOA9V3RBOA+pb5zdV8lq6uj6KNUPnrEBnkkbnJwGgwxl",
+	"LpVYYTJzqtr9Npnswyvs3JrAE4Pp+oz9S7GbDWPRoKEqdC5oRBV914a45iELELw5CSVmhfl5mLw0cEpU",
+	"zZmIiAIPaKy+fwMn1xONFS5QaEH1QtT07AHEkxEzlGBEhCCbvrCkAksVRrIXfvEkRWvJp5FGF9/20iho",
+	"YXnD9OKFVRLqN8Dq0E3ELgqOQ7TV7tVK/NRgx2FrBT6DWvPHqzA0jbxEEqDoauQ/UotTG3mZh8ly+ufL",
+	"Y8nFakt3QH/5NVPhhzR5M5Ef2ro9iQ9r+T1ZXbjxm1mlXdBOlo05sC+DTzcOmoVkgfKC9g2HkLxgmPFt",
+	"NOFux2YK/NK5EPqz7tYcHm1fvM8a5jyadECqjVkhmgrhnCujMmf52nEoafuWkOdgrY9grfNzz9pUdZif",
+	"ql8HQeU+/h/pqqi/qqwBxB2U1inMXVpbEVGCrmvSokF34901nI5pPBpY11RanT3CCk0NYuz4WXWAsmFi",
+	"skZOY1TRoAc5ZxhUn1lRzTk1jLUTptS1q4oTKZ+Wgq0Wyz6HSo87884jpQFHjRc5MHpbodj8xkTUVexf",
+	"hdGB3Wav3ZaBtHCispOHdoWBu61aVh+WVL9dV50z+6ctNcRzABalHjoYqFdr53Cxo9ojAC+5kaxl3zxW",
+	"OmlEpFce1V/bHhunacPterebaYn2WKtcVgyg7Xo2nNYYqq/jDv/0Tlv8rnjLaZ+5/ldh0zbHq9h0WmOp",
+	"OFLuz0/5ALzGzFFM9BCPLRp0aHPPmqa/EiF4sFSKe66bXbIqlGocIPKI8DGhkMyS/wIAAP//+R/KZlof",
+	"AAA=",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
