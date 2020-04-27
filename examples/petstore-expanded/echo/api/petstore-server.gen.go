@@ -38,6 +38,19 @@ type ServerInterfaceWrapper struct {
 
 // FindPets converts echo context to params.
 func (w *ServerInterfaceWrapper) FindPets(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{
+		"tags":  true,
+		"limit": true,
+	}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
@@ -69,6 +82,16 @@ func (w *ServerInterfaceWrapper) FindPets(ctx echo.Context) error {
 
 // AddPet converts echo context to params.
 func (w *ServerInterfaceWrapper) AddPet(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
@@ -78,6 +101,16 @@ func (w *ServerInterfaceWrapper) AddPet(ctx echo.Context) error {
 
 // DeletePet converts echo context to params.
 func (w *ServerInterfaceWrapper) DeletePet(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int64
@@ -94,6 +127,16 @@ func (w *ServerInterfaceWrapper) DeletePet(ctx echo.Context) error {
 
 // FindPetById converts echo context to params.
 func (w *ServerInterfaceWrapper) FindPetById(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int64

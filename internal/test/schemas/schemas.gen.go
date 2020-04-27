@@ -513,6 +513,16 @@ type ServerInterfaceWrapper struct {
 
 // Issue30 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue30(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 	// ------------- Path parameter "fallthrough" -------------
 	var pFallthrough string
@@ -529,6 +539,16 @@ func (w *ServerInterfaceWrapper) Issue30(ctx echo.Context) error {
 
 // Issue41 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue41(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 	// ------------- Path parameter "1param" -------------
 	var n1param N5StartsWithNumber
@@ -545,6 +565,18 @@ func (w *ServerInterfaceWrapper) Issue41(ctx echo.Context) error {
 
 // Issue9 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue9(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{
+		"foo": true,
+	}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context

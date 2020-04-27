@@ -1087,6 +1087,19 @@ type ServerInterfaceWrapper struct {
 
 // ParamsWithAddProps converts echo context to params.
 func (w *ServerInterfaceWrapper) ParamsWithAddProps(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{
+		"p1": true,
+		"p2": true,
+	}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
@@ -1122,6 +1135,16 @@ func (w *ServerInterfaceWrapper) ParamsWithAddProps(ctx echo.Context) error {
 
 // BodyWithAddProps converts echo context to params.
 func (w *ServerInterfaceWrapper) BodyWithAddProps(ctx echo.Context) error {
+
+	validQueryParams := map[string]bool{}
+
+	// Check for unknown query parameters.
+	for name, _ := range ctx.QueryParams() {
+		if _, ok := validQueryParams[name]; !ok {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
+		}
+	}
+
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
