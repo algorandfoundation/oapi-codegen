@@ -2362,7 +2362,9 @@ type ServerInterfaceWrapper struct {
 // GetContentObject converts echo context to params.
 func (w *ServerInterfaceWrapper) GetContentObject(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2388,7 +2390,9 @@ func (w *ServerInterfaceWrapper) GetContentObject(ctx echo.Context) error {
 // GetCookie converts echo context to params.
 func (w *ServerInterfaceWrapper) GetCookie(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2492,7 +2496,9 @@ func (w *ServerInterfaceWrapper) GetCookie(ctx echo.Context) error {
 // GetHeader converts echo context to params.
 func (w *ServerInterfaceWrapper) GetHeader(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2621,7 +2627,9 @@ func (w *ServerInterfaceWrapper) GetHeader(ctx echo.Context) error {
 // GetLabelExplodeArray converts echo context to params.
 func (w *ServerInterfaceWrapper) GetLabelExplodeArray(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2647,7 +2655,9 @@ func (w *ServerInterfaceWrapper) GetLabelExplodeArray(ctx echo.Context) error {
 // GetLabelExplodeObject converts echo context to params.
 func (w *ServerInterfaceWrapper) GetLabelExplodeObject(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2673,7 +2683,9 @@ func (w *ServerInterfaceWrapper) GetLabelExplodeObject(ctx echo.Context) error {
 // GetLabelNoExplodeArray converts echo context to params.
 func (w *ServerInterfaceWrapper) GetLabelNoExplodeArray(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2699,7 +2711,9 @@ func (w *ServerInterfaceWrapper) GetLabelNoExplodeArray(ctx echo.Context) error 
 // GetLabelNoExplodeObject converts echo context to params.
 func (w *ServerInterfaceWrapper) GetLabelNoExplodeObject(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2725,7 +2739,9 @@ func (w *ServerInterfaceWrapper) GetLabelNoExplodeObject(ctx echo.Context) error
 // GetMatrixExplodeArray converts echo context to params.
 func (w *ServerInterfaceWrapper) GetMatrixExplodeArray(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2751,7 +2767,9 @@ func (w *ServerInterfaceWrapper) GetMatrixExplodeArray(ctx echo.Context) error {
 // GetMatrixExplodeObject converts echo context to params.
 func (w *ServerInterfaceWrapper) GetMatrixExplodeObject(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2777,7 +2795,9 @@ func (w *ServerInterfaceWrapper) GetMatrixExplodeObject(ctx echo.Context) error 
 // GetMatrixNoExplodeArray converts echo context to params.
 func (w *ServerInterfaceWrapper) GetMatrixNoExplodeArray(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2803,7 +2823,9 @@ func (w *ServerInterfaceWrapper) GetMatrixNoExplodeArray(ctx echo.Context) error
 // GetMatrixNoExplodeObject converts echo context to params.
 func (w *ServerInterfaceWrapper) GetMatrixNoExplodeObject(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2829,7 +2851,9 @@ func (w *ServerInterfaceWrapper) GetMatrixNoExplodeObject(ctx echo.Context) erro
 // GetPassThrough converts echo context to params.
 func (w *ServerInterfaceWrapper) GetPassThrough(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2853,13 +2877,14 @@ func (w *ServerInterfaceWrapper) GetPassThrough(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetQueryForm(ctx echo.Context) error {
 
 	validQueryParams := map[string]bool{
-		"ea": true,
-		"a":  true,
-		"eo": true,
-		"o":  true,
-		"ep": true,
-		"p":  true,
-		"co": true,
+		"pretty": true,
+		"ea":     true,
+		"a":      true,
+		"eo":     true,
+		"o":      true,
+		"ep":     true,
+		"p":      true,
+		"co":     true,
 	}
 
 	// Check for unknown query parameters.
@@ -2953,7 +2978,9 @@ func (w *ServerInterfaceWrapper) GetQueryForm(ctx echo.Context) error {
 // GetSimpleExplodeArray converts echo context to params.
 func (w *ServerInterfaceWrapper) GetSimpleExplodeArray(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -2979,7 +3006,9 @@ func (w *ServerInterfaceWrapper) GetSimpleExplodeArray(ctx echo.Context) error {
 // GetSimpleExplodeObject converts echo context to params.
 func (w *ServerInterfaceWrapper) GetSimpleExplodeObject(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -3005,7 +3034,9 @@ func (w *ServerInterfaceWrapper) GetSimpleExplodeObject(ctx echo.Context) error 
 // GetSimpleNoExplodeArray converts echo context to params.
 func (w *ServerInterfaceWrapper) GetSimpleNoExplodeArray(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -3031,7 +3062,9 @@ func (w *ServerInterfaceWrapper) GetSimpleNoExplodeArray(ctx echo.Context) error
 // GetSimpleNoExplodeObject converts echo context to params.
 func (w *ServerInterfaceWrapper) GetSimpleNoExplodeObject(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -3057,7 +3090,9 @@ func (w *ServerInterfaceWrapper) GetSimpleNoExplodeObject(ctx echo.Context) erro
 // GetSimplePrimitive converts echo context to params.
 func (w *ServerInterfaceWrapper) GetSimplePrimitive(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {

@@ -40,8 +40,9 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) FindPets(ctx echo.Context) error {
 
 	validQueryParams := map[string]bool{
-		"tags":  true,
-		"limit": true,
+		"pretty": true,
+		"tags":   true,
+		"limit":  true,
 	}
 
 	// Check for unknown query parameters.
@@ -83,7 +84,9 @@ func (w *ServerInterfaceWrapper) FindPets(ctx echo.Context) error {
 // AddPet converts echo context to params.
 func (w *ServerInterfaceWrapper) AddPet(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -102,7 +105,9 @@ func (w *ServerInterfaceWrapper) AddPet(ctx echo.Context) error {
 // DeletePet converts echo context to params.
 func (w *ServerInterfaceWrapper) DeletePet(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -128,7 +133,9 @@ func (w *ServerInterfaceWrapper) DeletePet(ctx echo.Context) error {
 // FindPetById converts echo context to params.
 func (w *ServerInterfaceWrapper) FindPetById(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {

@@ -1089,8 +1089,9 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) ParamsWithAddProps(ctx echo.Context) error {
 
 	validQueryParams := map[string]bool{
-		"p1": true,
-		"p2": true,
+		"pretty": true,
+		"p1":     true,
+		"p2":     true,
 	}
 
 	// Check for unknown query parameters.
@@ -1136,7 +1137,9 @@ func (w *ServerInterfaceWrapper) ParamsWithAddProps(ctx echo.Context) error {
 // BodyWithAddProps converts echo context to params.
 func (w *ServerInterfaceWrapper) BodyWithAddProps(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {

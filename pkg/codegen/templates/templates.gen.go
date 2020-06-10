@@ -745,6 +745,7 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx echo.Context) error {
 
     validQueryParams := map[string]bool {
+        "pretty": true,
 {{range .QueryParams}}        "{{.ParamName}}": true,
 {{end}}
     }

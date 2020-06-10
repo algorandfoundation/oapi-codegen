@@ -514,7 +514,9 @@ type ServerInterfaceWrapper struct {
 // Issue30 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue30(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -540,7 +542,9 @@ func (w *ServerInterfaceWrapper) Issue30(ctx echo.Context) error {
 // Issue41 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue41(ctx echo.Context) error {
 
-	validQueryParams := map[string]bool{}
+	validQueryParams := map[string]bool{
+		"pretty": true,
+	}
 
 	// Check for unknown query parameters.
 	for name, _ := range ctx.QueryParams() {
@@ -567,7 +571,8 @@ func (w *ServerInterfaceWrapper) Issue41(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) Issue9(ctx echo.Context) error {
 
 	validQueryParams := map[string]bool{
-		"foo": true,
+		"pretty": true,
+		"foo":    true,
 	}
 
 	// Check for unknown query parameters.
