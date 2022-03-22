@@ -1,5 +1,7 @@
 module github.com/algorand/oapi-codegen
 
+go 1.16
+
 require (
 	github.com/cyberdelia/templates v0.0.0-20191230040416-20a325f050d4
 	github.com/getkin/kin-openapi v0.3.1
@@ -14,5 +16,3 @@ require (
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	golang.org/x/tools v0.0.0-20200423205358-59e73619c742 // indirect
 )
-
-go 1.13
