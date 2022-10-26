@@ -2,27 +2,32 @@ package codegen
 
 import (
 	"bytes"
+	_ "embed"
 	"go/format"
 	"io/ioutil"
 	"net/http"
 	"testing"
 
-	examplePetstoreClient "github.com/algorand/oapi-codegen/examples/petstore-expanded"
-	examplePetstore "github.com/algorand/oapi-codegen/examples/petstore-expanded/echo/api"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golangci/lint-1"
 	"github.com/stretchr/testify/assert"
+
+	examplePetstoreClient "github.com/algorand/oapi-codegen/examples/petstore-expanded"
+	examplePetstore "github.com/algorand/oapi-codegen/examples/petstore-expanded/echo/api"
 )
 
 func TestExamplePetStoreCodeGeneration(t *testing.T) {
 
 	// Input vars for code generation:
 	packageName := "api"
-	opts := Options{
-		GenerateClient:     true,
-		GenerateEchoServer: true,
-		GenerateTypes:      true,
-		EmbedSpec:          true,
+	opts := Configuration{
+		PackageName: packageName,
+		Generate: GenerateOptions{
+			EchoServer:   true,
+			Client:       true,
+			Models:       true,
+			EmbeddedSpec: true,
+		},
 	}
 
 	// Get a spec from the example PetStore definition:
@@ -30,7 +35,7 @@ func TestExamplePetStoreCodeGeneration(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Run our code generation:
-	code, err := Generate(swagger, packageName, opts)
+	code, err := Generate(swagger, opts)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, code)
 
@@ -42,7 +47,7 @@ func TestExamplePetStoreCodeGeneration(t *testing.T) {
 	assert.Contains(t, code, "package api")
 
 	// Check that the client method signatures return response structs:
-	assert.Contains(t, code, "func (c *Client) FindPetById(ctx context.Context, id int64) (*http.Response, error) {")
+	assert.Contains(t, code, "func (c *Client) FindPetByID(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error) {")
 
 	// Check that the property comments were generated
 	assert.Contains(t, code, "// Unique id of the pet")
@@ -65,9 +70,14 @@ func TestExamplePetStoreCodeGenerationWithUserTemplates(t *testing.T) {
 
 	// Input vars for code generation:
 	packageName := "api"
-	opts := Options{
-		GenerateTypes: true,
-		UserTemplates: userTemplates,
+	opts := Configuration{
+		PackageName: packageName,
+		Generate: GenerateOptions{
+			Models: true,
+		},
+		OutputOptions: OutputOptions{
+			UserTemplates: userTemplates,
+		},
 	}
 
 	// Get a spec from the example PetStore definition:
@@ -75,7 +85,7 @@ func TestExamplePetStoreCodeGenerationWithUserTemplates(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Run our code generation:
-	code, err := Generate(swagger, packageName, opts)
+	code, err := Generate(swagger, opts)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, code)
 
@@ -101,7 +111,7 @@ func TestExamplePetStoreParseFunction(t *testing.T) {
 	}
 	cannedResponse.Header.Add("Content-type", "application/json")
 
-	findPetByIDResponse, err := examplePetstoreClient.ParseFindPetByIdResponse(cannedResponse)
+	findPetByIDResponse, err := examplePetstoreClient.ParseFindPetByIDResponse(cannedResponse)
 	assert.NoError(t, err)
 	assert.NotNil(t, findPetByIDResponse.JSON200)
 	assert.Equal(t, int64(5), findPetByIDResponse.JSON200.Id)
@@ -110,70 +120,32 @@ func TestExamplePetStoreParseFunction(t *testing.T) {
 	assert.Equal(t, "cat", *findPetByIDResponse.JSON200.Tag)
 }
 
-func TestFilterOperationsByTag(t *testing.T) {
-	packageName := "testswagger"
-	t.Run("include tags", func(t *testing.T) {
-		opts := Options{
-			GenerateClient:     true,
-			GenerateEchoServer: true,
-			GenerateTypes:      true,
-			EmbedSpec:          true,
-			IncludeTags:        []string{"hippo", "giraffe", "cat"},
-		}
-
-		// Get a spec from the test definition in this file:
-		swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData([]byte(testOpenAPIDefinition))
-		assert.NoError(t, err)
-
-		// Run our code generation:
-		code, err := Generate(swagger, packageName, opts)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, code)
-		assert.NotContains(t, code, `"/test/:name"`)
-		assert.Contains(t, code, `"/cat"`)
-	})
-
-	t.Run("exclude tags", func(t *testing.T) {
-		opts := Options{
-			GenerateClient:     true,
-			GenerateEchoServer: true,
-			GenerateTypes:      true,
-			EmbedSpec:          true,
-			ExcludeTags:        []string{"hippo", "giraffe", "cat"},
-		}
-
-		// Get a spec from the test definition in this file:
-		swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData([]byte(testOpenAPIDefinition))
-		assert.NoError(t, err)
-
-		// Run our code generation:
-		code, err := Generate(swagger, packageName, opts)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, code)
-		assert.Contains(t, code, `"/test/:name"`)
-		assert.NotContains(t, code, `"/cat"`)
-	})
-}
-
 func TestExampleOpenAPICodeGeneration(t *testing.T) {
 
 	// Input vars for code generation:
 	packageName := "testswagger"
-	opts := Options{
-		GenerateClient:     true,
-		GenerateEchoServer: true,
-		GenerateTypes:      true,
-		EmbedSpec:          true,
+	opts := Configuration{
+		PackageName: packageName,
+		Generate: GenerateOptions{
+			EchoServer:   true,
+			Client:       true,
+			Models:       true,
+			EmbeddedSpec: true,
+		},
+		OutputOptions: OutputOptions{
+			TypeMappings: map[string]string{
+				"integer": "uint64",
+			},
+		},
 	}
-	TypeMappings["integer"] = "uint64"
-	defer delete(TypeMappings, "integer")
+	defer delete(opts.OutputOptions.TypeMappings, "integer")
 
 	// Get a spec from the test definition in this file:
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData([]byte(testOpenAPIDefinition))
+	swagger, err := openapi3.NewLoader().LoadFromData([]byte(testOpenAPIDefinition))
 	assert.NoError(t, err)
 
 	// Run our code generation:
-	code, err := Generate(swagger, packageName, opts)
+	code, err := Generate(swagger, opts)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, code)
 
@@ -185,12 +157,12 @@ func TestExampleOpenAPICodeGeneration(t *testing.T) {
 	assert.Contains(t, code, "package testswagger")
 
 	// Check that response structs are generated correctly:
-	assert.Contains(t, code, "type getTestByNameResponse struct {")
+	assert.Contains(t, code, "type GetTestByNameResponse struct {")
 
 	// Check that response structs contains fallbacks to interface for invalid types:
 	// Here an invalid array with no items.
 	assert.Contains(t, code, `
-type getTestByNameResponse struct {
+type GetTestByNameResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]Test
@@ -201,15 +173,16 @@ type getTestByNameResponse struct {
 }`)
 
 	// Check that the helper methods are generated correctly:
-	assert.Contains(t, code, "func (r getTestByNameResponse) Status() string {")
-	assert.Contains(t, code, "func (r getTestByNameResponse) StatusCode() int {")
-	assert.Contains(t, code, "func ParseGetTestByNameResponse(rsp *http.Response) (*getTestByNameResponse, error) {")
+	assert.Contains(t, code, "func (r GetTestByNameResponse) Status() string {")
+	assert.Contains(t, code, "func (r GetTestByNameResponse) StatusCode() int {")
+	assert.Contains(t, code, "func ParseGetTestByNameResponse(rsp *http.Response) (*GetTestByNameResponse, error) {")
 
 	// Check the client method signatures:
 	assert.Contains(t, code, "type GetTestByNameParams struct {")
-	assert.Contains(t, code, "Top *uint64 `json:\"$top,omitempty\"`")
-	assert.Contains(t, code, "func (c *Client) GetTestByName(ctx context.Context, name string, params *GetTestByNameParams) (*http.Response, error) {")
-	assert.Contains(t, code, "func (c *ClientWithResponses) GetTestByNameWithResponse(ctx context.Context, name string, params *GetTestByNameParams) (*getTestByNameResponse, error) {")
+	assert.Contains(t, code, "Top *uint64 `form:\"$top,omitempty\" json:\"$top,omitempty\"`")
+	assert.Contains(t, code, "func (c *Client) GetTestByName(ctx context.Context, name string, params *GetTestByNameParams, reqEditors ...RequestEditorFn) (*http.Response, error) {")
+	assert.Contains(t, code, "func (c *ClientWithResponses) GetTestByNameWithResponse(ctx context.Context, name string, params *GetTestByNameParams, reqEditors ...RequestEditorFn) (*GetTestByNameResponse, error) {")
+	assert.Contains(t, code, "DeadSince *time.Time    `json:\"dead_since,omitempty\" tag1:\"value1\" tag2:\"value2\"`")
 
 	// Make sure the generated code is valid:
 	linter := new(lint.Linter)
@@ -218,140 +191,5 @@ type getTestByNameResponse struct {
 	assert.Len(t, problems, 0)
 }
 
-const testOpenAPIDefinition = `
-openapi: 3.0.1
-
-info:
-  title: OpenAPI-CodeGen Test
-  description: 'This is a test OpenAPI Spec'
-  version: 1.0.0
-
-servers:
-- url: https://test.oapi-codegen.com/v2
-- url: http://test.oapi-codegen.com/v2
-
-paths:
-  /test/{name}:
-    get:
-      tags:
-      - test
-      summary: Get test
-      operationId: getTestByName
-      parameters:
-      - name: name
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: $top
-        in: query
-        required: false
-        schema:
-          type: integer
-      responses:
-        200:
-          description: Success
-          content:
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Test'
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Test'
-        422:
-          description: InvalidArray
-          content:
-            application/xml:
-              schema:
-                type: array
-            application/json:
-              schema:
-                type: array
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /cat:
-    get:
-      tags:
-      - cat
-      summary: Get cat status
-      operationId: getCatStatus
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/CatAlive'
-                - $ref: '#/components/schemas/CatDead'
-            application/xml:
-              schema:
-                anyOf:
-                - $ref: '#/components/schemas/CatAlive'
-                - $ref: '#/components/schemas/CatDead'
-            application/yaml:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/CatAlive'
-                - $ref: '#/components/schemas/CatDead'
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-components:
-  schemas:
-
-    Test:
-      properties:
-        name:
-          type: string
-        cases:
-          type: array
-          items:
-            $ref: '#/components/schemas/TestCase'
-
-    TestCase:
-      properties:
-        name:
-          type: string
-        command:
-          type: string
-
-    Error:
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-
-    CatAlive:
-      properties:
-        name:
-          type: string
-        alive_since:
-          type: string
-          format: date-time
-
-    CatDead:
-      properties:
-        name:
-          type: string
-        dead_since:
-          type: string
-          format: date-time
-        cause:
-          type: string
-          enum: [car, dog, oldage]
-`
+//go:embed test_spec.yaml
+var testOpenAPIDefinition string

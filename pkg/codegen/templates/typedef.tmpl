@@ -1,4 +1,4 @@
 {{range .Types}}
-// {{.TypeName}} defines model for {{.JsonName}}.
-type {{.TypeName}} {{.Schema.TypeDecl}}
+{{ with .Schema.Description }}{{ . }}{{ else }}// {{.TypeName}} defines model for {{.JsonName}}.{{ end }}
+type {{.TypeName}} {{if .IsAlias }}={{end}} {{.Schema.TypeDecl}}
 {{end}}
