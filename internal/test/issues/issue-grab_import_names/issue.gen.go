@@ -286,18 +286,6 @@ type ServerInterfaceWrapper struct {
 
 // GetFoo converts echo context to params.
 func (w *ServerInterfaceWrapper) GetFoo(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context

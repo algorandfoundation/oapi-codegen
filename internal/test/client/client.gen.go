@@ -906,18 +906,6 @@ type ServerInterfaceWrapper struct {
 
 // PostBoth converts echo context to params.
 func (w *ServerInterfaceWrapper) PostBoth(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
@@ -927,18 +915,6 @@ func (w *ServerInterfaceWrapper) PostBoth(ctx echo.Context) error {
 
 // GetBoth converts echo context to params.
 func (w *ServerInterfaceWrapper) GetBoth(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
@@ -948,18 +924,6 @@ func (w *ServerInterfaceWrapper) GetBoth(ctx echo.Context) error {
 
 // PostJson converts echo context to params.
 func (w *ServerInterfaceWrapper) PostJson(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
@@ -969,18 +933,6 @@ func (w *ServerInterfaceWrapper) PostJson(ctx echo.Context) error {
 
 // GetJson converts echo context to params.
 func (w *ServerInterfaceWrapper) GetJson(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(OpenIdScopes, []string{"json.read", "json.admin"})
@@ -992,18 +944,6 @@ func (w *ServerInterfaceWrapper) GetJson(ctx echo.Context) error {
 
 // PostOther converts echo context to params.
 func (w *ServerInterfaceWrapper) PostOther(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
@@ -1013,18 +953,6 @@ func (w *ServerInterfaceWrapper) PostOther(ctx echo.Context) error {
 
 // GetOther converts echo context to params.
 func (w *ServerInterfaceWrapper) GetOther(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
@@ -1034,18 +962,6 @@ func (w *ServerInterfaceWrapper) GetOther(ctx echo.Context) error {
 
 // GetJsonWithTrailingSlash converts echo context to params.
 func (w *ServerInterfaceWrapper) GetJsonWithTrailingSlash(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(OpenIdScopes, []string{"json.read", "json.admin"})

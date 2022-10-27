@@ -326,18 +326,6 @@ type ServerInterfaceWrapper struct {
 
 // ExampleGet converts echo context to params.
 func (w *ServerInterfaceWrapper) ExampleGet(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments

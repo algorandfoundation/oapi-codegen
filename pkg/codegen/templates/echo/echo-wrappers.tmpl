@@ -5,20 +5,6 @@ type ServerInterfaceWrapper struct {
 
 {{range .}}{{$opid := .OperationId}}// {{$opid}} converts echo context to params.
 func (w *ServerInterfaceWrapper) {{.OperationId}} (ctx echo.Context) error {
-
-    validQueryParams := map[string]bool {
-        "pretty": true,
-{{range .QueryParams}}        "{{.ParamName}}": true,
-{{end}}
-    }
-
-    // Check for unknown query parameters.
-    for name, _ := range ctx.QueryParams() {
-      if _, ok := validQueryParams[name]; !ok {
-        return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-      }
-    }
-
     var err error
 {{range .PathParams}}// ------------- Path parameter "{{.ParamName}}" -------------
     var {{$varName := .GoVariableName}}{{$varName}} {{.TypeDef}}

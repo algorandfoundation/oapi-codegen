@@ -1159,18 +1159,6 @@ type ServerInterfaceWrapper struct {
 
 // EnsureEverythingIsReferenced converts echo context to params.
 func (w *ServerInterfaceWrapper) EnsureEverythingIsReferenced(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(Access_tokenScopes, []string{""})
@@ -1182,18 +1170,6 @@ func (w *ServerInterfaceWrapper) EnsureEverythingIsReferenced(ctx echo.Context) 
 
 // Issue127 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue127(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(Access_tokenScopes, []string{""})
@@ -1205,18 +1181,6 @@ func (w *ServerInterfaceWrapper) Issue127(ctx echo.Context) error {
 
 // Issue185 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue185(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(Access_tokenScopes, []string{""})
@@ -1228,18 +1192,6 @@ func (w *ServerInterfaceWrapper) Issue185(ctx echo.Context) error {
 
 // Issue209 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue209(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 	// ------------- Path parameter "str" -------------
 	var str StringInPath
@@ -1258,18 +1210,6 @@ func (w *ServerInterfaceWrapper) Issue209(ctx echo.Context) error {
 
 // Issue30 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue30(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 	// ------------- Path parameter "fallthrough" -------------
 	var pFallthrough string
@@ -1288,18 +1228,6 @@ func (w *ServerInterfaceWrapper) Issue30(ctx echo.Context) error {
 
 // GetIssues375 converts echo context to params.
 func (w *ServerInterfaceWrapper) GetIssues375(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(Access_tokenScopes, []string{""})
@@ -1311,18 +1239,6 @@ func (w *ServerInterfaceWrapper) GetIssues375(ctx echo.Context) error {
 
 // Issue41 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue41(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 	// ------------- Path parameter "1param" -------------
 	var n1param N5StartsWithNumber
@@ -1341,19 +1257,6 @@ func (w *ServerInterfaceWrapper) Issue41(ctx echo.Context) error {
 
 // Issue9 converts echo context to params.
 func (w *ServerInterfaceWrapper) Issue9(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-		"foo":    true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(Access_tokenScopes, []string{""})

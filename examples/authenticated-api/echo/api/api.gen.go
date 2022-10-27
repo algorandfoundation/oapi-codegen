@@ -427,18 +427,6 @@ type ServerInterfaceWrapper struct {
 
 // ListThings converts echo context to params.
 func (w *ServerInterfaceWrapper) ListThings(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(BearerAuthScopes, []string{""})
@@ -450,18 +438,6 @@ func (w *ServerInterfaceWrapper) ListThings(ctx echo.Context) error {
 
 // AddThing converts echo context to params.
 func (w *ServerInterfaceWrapper) AddThing(ctx echo.Context) error {
-
-	validQueryParams := map[string]bool{
-		"pretty": true,
-	}
-
-	// Check for unknown query parameters.
-	for name, _ := range ctx.QueryParams() {
-		if _, ok := validQueryParams[name]; !ok {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unknown parameter detected: %s", name))
-		}
-	}
-
 	var err error
 
 	ctx.Set(BearerAuthScopes, []string{"things:w"})
