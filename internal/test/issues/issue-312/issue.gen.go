@@ -479,20 +479,20 @@ type EchoRouter interface {
 }
 
 // RegisterHandlers adds each server route to the EchoRouter.
-func RegisterHandlers(router EchoRouter, si ServerInterface) {
-	RegisterHandlersWithBaseURL(router, si, "")
+func RegisterHandlers(router EchoRouter, si ServerInterface, m ...echo.MiddlewareFunc) {
+	RegisterHandlersWithBaseURL(router, si, "", m...)
 }
 
 // Registers handlers, and prepends BaseURL to the paths, so that the paths
 // can be served under a prefix.
-func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
+func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string, m ...echo.MiddlewareFunc) {
 
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/pets/:petId", wrapper.GetPet)
-	router.POST(baseURL+"/pets:validate", wrapper.ValidatePets)
+	router.GET(baseURL+"/pets/:petId", wrapper.GetPet, m...)
+	router.POST(baseURL+"/pets:validate", wrapper.ValidatePets, m...)
 
 }
 
