@@ -661,4 +661,4 @@ on-the-fly at run time. Example:
         petstore-expanded.yaml
 
 Overriding default type mappings can be accomplished with `-type-mappings`.
-For example use unsigned integers with `-type-mappings integer=uint32`.
+For example use unsigned integers with `-type-mappings integer:uint32`.
