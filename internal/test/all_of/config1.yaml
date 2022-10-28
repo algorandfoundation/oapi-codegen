@@ -1,9 +1,9 @@
-output:
-  v1/openapi.gen.go
 package: v1
 generate:
-  - types
-  - skip-prune
-  - spec
+  models: true
+  embedded-spec: true
 compatibility:
   old-merge-schemas: true
+output-options:
+  skip-prune: true
+output: v1/openapi.gen.go

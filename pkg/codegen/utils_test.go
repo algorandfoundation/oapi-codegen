@@ -263,6 +263,23 @@ func TestSwaggerUriToGinUri(t *testing.T) {
 	assert.Equal(t, "/path/:arg/foo", SwaggerUriToGinUri("/path/{?arg*}/foo"))
 }
 
+func TestSwaggerUriToGorillaUri(t *testing.T) { // TODO
+	assert.Equal(t, "/path", SwaggerUriToGorillaUri("/path"))
+	assert.Equal(t, "/path/{arg}", SwaggerUriToGorillaUri("/path/{arg}"))
+	assert.Equal(t, "/path/{arg1}/{arg2}", SwaggerUriToGorillaUri("/path/{arg1}/{arg2}"))
+	assert.Equal(t, "/path/{arg1}/{arg2}/foo", SwaggerUriToGorillaUri("/path/{arg1}/{arg2}/foo"))
+
+	// Make sure all the exploded and alternate formats match too
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{arg}/foo"))
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{arg*}/foo"))
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{.arg}/foo"))
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{.arg*}/foo"))
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{;arg}/foo"))
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{;arg*}/foo"))
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{?arg}/foo"))
+	assert.Equal(t, "/path/{arg}/foo", SwaggerUriToGorillaUri("/path/{?arg*}/foo"))
+}
+
 func TestOrderedParamsFromUri(t *testing.T) {
 	result := OrderedParamsFromUri("/path/{param1}/{.param2}/{;param3*}/foo")
 	assert.EqualValues(t, []string{"param1", "param2", "param3"}, result)
@@ -322,6 +339,62 @@ Line
 	for _, testCase := range testCases {
 		t.Run(testCase.message, func(t *testing.T) {
 			result := StringToGoComment(testCase.input)
+			assert.EqualValues(t, testCase.expected, result, testCase.message)
+		})
+	}
+}
+
+func TestStringWithTypeNameToGoComment(t *testing.T) {
+	testCases := []struct {
+		input     string
+		inputName string
+		expected  string
+		message   string
+	}{
+		{
+			input:     "",
+			inputName: "",
+			expected:  "",
+			message:   "blank string should be ignored due to human unreadable",
+		},
+		{
+			input:    " ",
+			expected: "",
+			message:  "whitespace should be ignored due to human unreadable",
+		},
+		{
+			input:     "Single Line",
+			inputName: "SingleLine",
+			expected:  "// SingleLine Single Line",
+			message:   "single line comment",
+		},
+		{
+			input:     "    Single Line",
+			inputName: "SingleLine",
+			expected:  "// SingleLine     Single Line",
+			message:   "single line comment preserving whitespace",
+		},
+		{
+			input: `Multi
+Line
+  With
+    Spaces
+	And
+		Tabs
+`,
+			inputName: "MultiLine",
+			expected: `// MultiLine Multi
+// Line
+//   With
+//     Spaces
+// 	And
+// 		Tabs`,
+			message: "multi line preserving whitespaces using tabs or spaces",
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.message, func(t *testing.T) {
+			result := StringWithTypeNameToGoComment(testCase.input, testCase.inputName)
 			assert.EqualValues(t, testCase.expected, result, testCase.message)
 		})
 	}

@@ -10,7 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -19,6 +19,12 @@ import (
 	"github.com/algorand/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+)
+
+// Defines values for EnumParamsParamsEnumPathParam.
+const (
+	N100 EnumParamsParamsEnumPathParam = 100
+	N200 EnumParamsParamsEnumPathParam = 200
 )
 
 // ComplexObject defines model for ComplexObject.
@@ -36,91 +42,100 @@ type Object struct {
 
 // GetCookieParams defines parameters for GetCookie.
 type GetCookieParams struct {
-	// primitive
+	// P primitive
 	P *int32 `form:"p,omitempty" json:"p,omitempty"`
 
-	// primitive
+	// Ep primitive
 	Ep *int32 `form:"ep,omitempty" json:"ep,omitempty"`
 
-	// exploded array
+	// Ea exploded array
 	Ea *[]int32 `form:"ea,omitempty" json:"ea,omitempty"`
 
-	// array
+	// A array
 	A *[]int32 `form:"a,omitempty" json:"a,omitempty"`
 
-	// exploded object
+	// Eo exploded object
 	Eo *Object `form:"eo,omitempty" json:"eo,omitempty"`
 
-	// object
+	// O object
 	O *Object `form:"o,omitempty" json:"o,omitempty"`
 
-	// complex object
+	// Co complex object
 	Co *ComplexObject `form:"co,omitempty" json:"co,omitempty"`
 
-	// name starting with number
+	// N1s name starting with number
 	N1s *string `form:"1s,omitempty" json:"1s,omitempty"`
 }
 
+// EnumParamsParams defines parameters for EnumParams.
+type EnumParamsParams struct {
+	// EnumPathParam Parameter with enum values
+	EnumPathParam *EnumParamsParamsEnumPathParam `form:"enumPathParam,omitempty" json:"enumPathParam,omitempty"`
+}
+
+// EnumParamsParamsEnumPathParam defines parameters for EnumParams.
+type EnumParamsParamsEnumPathParam int32
+
 // GetHeaderParams defines parameters for GetHeader.
 type GetHeaderParams struct {
-	// primitive
+	// XPrimitive primitive
 	XPrimitive *int32 `json:"X-Primitive,omitempty"`
 
-	// primitive
+	// XPrimitiveExploded primitive
 	XPrimitiveExploded *int32 `json:"X-Primitive-Exploded,omitempty"`
 
-	// exploded array
+	// XArrayExploded exploded array
 	XArrayExploded *[]int32 `json:"X-Array-Exploded,omitempty"`
 
-	// array
+	// XArray array
 	XArray *[]int32 `json:"X-Array,omitempty"`
 
-	// exploded object
+	// XObjectExploded exploded object
 	XObjectExploded *Object `json:"X-Object-Exploded,omitempty"`
 
-	// object
+	// XObject object
 	XObject *Object `json:"X-Object,omitempty"`
 
-	// complex object
+	// XComplexObject complex object
 	XComplexObject *ComplexObject `json:"X-Complex-Object,omitempty"`
 
-	// name starting with number
+	// N1StartingWithNumber name starting with number
 	N1StartingWithNumber *string `json:"1-Starting-With-Number,omitempty"`
 }
 
 // GetDeepObjectParams defines parameters for GetDeepObject.
 type GetDeepObjectParams struct {
-	// deep object
+	// DeepObj deep object
 	DeepObj ComplexObject `json:"deepObj"`
 }
 
 // GetQueryFormParams defines parameters for GetQueryForm.
 type GetQueryFormParams struct {
-	// exploded array
+	// Ea exploded array
 	Ea *[]int32 `form:"ea,omitempty" json:"ea,omitempty"`
 
-	// array
+	// A array
 	A *[]int32 `form:"a,omitempty" json:"a,omitempty"`
 
-	// exploded object
+	// Eo exploded object
 	Eo *Object `form:"eo,omitempty" json:"eo,omitempty"`
 
-	// object
+	// O object
 	O *Object `form:"o,omitempty" json:"o,omitempty"`
 
-	// exploded primitive
+	// Ep exploded primitive
 	Ep *int32 `form:"ep,omitempty" json:"ep,omitempty"`
 
-	// primitive
+	// P primitive
 	P *int32 `form:"p,omitempty" json:"p,omitempty"`
 
-	// primitive string
+	// Ps primitive string
 	Ps *string `form:"ps,omitempty" json:"ps,omitempty"`
 
-	// complex object
+	// Co complex object
 	Co *ComplexObject `form:"co,omitempty" json:"co,omitempty"`
 
-	// name starting with number
+	// N1s name starting with number
 	N1s *string `form:"1s,omitempty" json:"1s,omitempty"`
 }
 
@@ -203,6 +218,9 @@ type ClientInterface interface {
 	// GetCookie request
 	GetCookie(ctx context.Context, params *GetCookieParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// EnumParams request
+	EnumParams(ctx context.Context, params *EnumParamsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetHeader request
 	GetHeader(ctx context.Context, params *GetHeaderParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -272,6 +290,18 @@ func (c *Client) GetContentObject(ctx context.Context, param ComplexObject, reqE
 
 func (c *Client) GetCookie(ctx context.Context, params *GetCookieParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCookieRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EnumParams(ctx context.Context, params *EnumParamsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnumParamsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -678,6 +708,53 @@ func NewGetCookieRequest(server string, params *GetCookieParams) (*http.Request,
 			Value: cookieParam7,
 		}
 		req.AddCookie(cookie7)
+	}
+
+	return req, nil
+}
+
+// NewEnumParamsRequest generates requests for EnumParams
+func NewEnumParamsRequest(server string, params *EnumParamsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/enums")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.EnumPathParam != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "enumPathParam", runtime.ParamLocationQuery, *params.EnumPathParam); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
 	}
 
 	return req, nil
@@ -1565,6 +1642,9 @@ type ClientWithResponsesInterface interface {
 	// GetCookie request
 	GetCookieWithResponse(ctx context.Context, params *GetCookieParams, reqEditors ...RequestEditorFn) (*GetCookieResponse, error)
 
+	// EnumParams request
+	EnumParamsWithResponse(ctx context.Context, params *EnumParamsParams, reqEditors ...RequestEditorFn) (*EnumParamsResponse, error)
+
 	// GetHeader request
 	GetHeaderWithResponse(ctx context.Context, params *GetHeaderParams, reqEditors ...RequestEditorFn) (*GetHeaderResponse, error)
 
@@ -1656,6 +1736,27 @@ func (r GetCookieResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetCookieResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EnumParamsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r EnumParamsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EnumParamsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2058,6 +2159,15 @@ func (c *ClientWithResponses) GetCookieWithResponse(ctx context.Context, params 
 	return ParseGetCookieResponse(rsp)
 }
 
+// EnumParamsWithResponse request returning *EnumParamsResponse
+func (c *ClientWithResponses) EnumParamsWithResponse(ctx context.Context, params *EnumParamsParams, reqEditors ...RequestEditorFn) (*EnumParamsResponse, error) {
+	rsp, err := c.EnumParams(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEnumParamsResponse(rsp)
+}
+
 // GetHeaderWithResponse request returning *GetHeaderResponse
 func (c *ClientWithResponses) GetHeaderWithResponse(ctx context.Context, params *GetHeaderParams, reqEditors ...RequestEditorFn) (*GetHeaderResponse, error) {
 	rsp, err := c.GetHeader(ctx, params, reqEditors...)
@@ -2222,7 +2332,7 @@ func (c *ClientWithResponses) GetStartingWithNumberWithResponse(ctx context.Cont
 
 // ParseGetContentObjectResponse parses an HTTP response from a GetContentObjectWithResponse call
 func ParseGetContentObjectResponse(rsp *http.Response) (*GetContentObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2238,7 +2348,7 @@ func ParseGetContentObjectResponse(rsp *http.Response) (*GetContentObjectRespons
 
 // ParseGetCookieResponse parses an HTTP response from a GetCookieWithResponse call
 func ParseGetCookieResponse(rsp *http.Response) (*GetCookieResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2252,9 +2362,25 @@ func ParseGetCookieResponse(rsp *http.Response) (*GetCookieResponse, error) {
 	return response, nil
 }
 
+// ParseEnumParamsResponse parses an HTTP response from a EnumParamsWithResponse call
+func ParseEnumParamsResponse(rsp *http.Response) (*EnumParamsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EnumParamsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseGetHeaderResponse parses an HTTP response from a GetHeaderWithResponse call
 func ParseGetHeaderResponse(rsp *http.Response) (*GetHeaderResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2270,7 +2396,7 @@ func ParseGetHeaderResponse(rsp *http.Response) (*GetHeaderResponse, error) {
 
 // ParseGetLabelExplodeArrayResponse parses an HTTP response from a GetLabelExplodeArrayWithResponse call
 func ParseGetLabelExplodeArrayResponse(rsp *http.Response) (*GetLabelExplodeArrayResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2286,7 +2412,7 @@ func ParseGetLabelExplodeArrayResponse(rsp *http.Response) (*GetLabelExplodeArra
 
 // ParseGetLabelExplodeObjectResponse parses an HTTP response from a GetLabelExplodeObjectWithResponse call
 func ParseGetLabelExplodeObjectResponse(rsp *http.Response) (*GetLabelExplodeObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2302,7 +2428,7 @@ func ParseGetLabelExplodeObjectResponse(rsp *http.Response) (*GetLabelExplodeObj
 
 // ParseGetLabelNoExplodeArrayResponse parses an HTTP response from a GetLabelNoExplodeArrayWithResponse call
 func ParseGetLabelNoExplodeArrayResponse(rsp *http.Response) (*GetLabelNoExplodeArrayResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2318,7 +2444,7 @@ func ParseGetLabelNoExplodeArrayResponse(rsp *http.Response) (*GetLabelNoExplode
 
 // ParseGetLabelNoExplodeObjectResponse parses an HTTP response from a GetLabelNoExplodeObjectWithResponse call
 func ParseGetLabelNoExplodeObjectResponse(rsp *http.Response) (*GetLabelNoExplodeObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2334,7 +2460,7 @@ func ParseGetLabelNoExplodeObjectResponse(rsp *http.Response) (*GetLabelNoExplod
 
 // ParseGetMatrixExplodeArrayResponse parses an HTTP response from a GetMatrixExplodeArrayWithResponse call
 func ParseGetMatrixExplodeArrayResponse(rsp *http.Response) (*GetMatrixExplodeArrayResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2350,7 +2476,7 @@ func ParseGetMatrixExplodeArrayResponse(rsp *http.Response) (*GetMatrixExplodeAr
 
 // ParseGetMatrixExplodeObjectResponse parses an HTTP response from a GetMatrixExplodeObjectWithResponse call
 func ParseGetMatrixExplodeObjectResponse(rsp *http.Response) (*GetMatrixExplodeObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2366,7 +2492,7 @@ func ParseGetMatrixExplodeObjectResponse(rsp *http.Response) (*GetMatrixExplodeO
 
 // ParseGetMatrixNoExplodeArrayResponse parses an HTTP response from a GetMatrixNoExplodeArrayWithResponse call
 func ParseGetMatrixNoExplodeArrayResponse(rsp *http.Response) (*GetMatrixNoExplodeArrayResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2382,7 +2508,7 @@ func ParseGetMatrixNoExplodeArrayResponse(rsp *http.Response) (*GetMatrixNoExplo
 
 // ParseGetMatrixNoExplodeObjectResponse parses an HTTP response from a GetMatrixNoExplodeObjectWithResponse call
 func ParseGetMatrixNoExplodeObjectResponse(rsp *http.Response) (*GetMatrixNoExplodeObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2398,7 +2524,7 @@ func ParseGetMatrixNoExplodeObjectResponse(rsp *http.Response) (*GetMatrixNoExpl
 
 // ParseGetPassThroughResponse parses an HTTP response from a GetPassThroughWithResponse call
 func ParseGetPassThroughResponse(rsp *http.Response) (*GetPassThroughResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2414,7 +2540,7 @@ func ParseGetPassThroughResponse(rsp *http.Response) (*GetPassThroughResponse, e
 
 // ParseGetDeepObjectResponse parses an HTTP response from a GetDeepObjectWithResponse call
 func ParseGetDeepObjectResponse(rsp *http.Response) (*GetDeepObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2430,7 +2556,7 @@ func ParseGetDeepObjectResponse(rsp *http.Response) (*GetDeepObjectResponse, err
 
 // ParseGetQueryFormResponse parses an HTTP response from a GetQueryFormWithResponse call
 func ParseGetQueryFormResponse(rsp *http.Response) (*GetQueryFormResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2446,7 +2572,7 @@ func ParseGetQueryFormResponse(rsp *http.Response) (*GetQueryFormResponse, error
 
 // ParseGetSimpleExplodeArrayResponse parses an HTTP response from a GetSimpleExplodeArrayWithResponse call
 func ParseGetSimpleExplodeArrayResponse(rsp *http.Response) (*GetSimpleExplodeArrayResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2462,7 +2588,7 @@ func ParseGetSimpleExplodeArrayResponse(rsp *http.Response) (*GetSimpleExplodeAr
 
 // ParseGetSimpleExplodeObjectResponse parses an HTTP response from a GetSimpleExplodeObjectWithResponse call
 func ParseGetSimpleExplodeObjectResponse(rsp *http.Response) (*GetSimpleExplodeObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2478,7 +2604,7 @@ func ParseGetSimpleExplodeObjectResponse(rsp *http.Response) (*GetSimpleExplodeO
 
 // ParseGetSimpleNoExplodeArrayResponse parses an HTTP response from a GetSimpleNoExplodeArrayWithResponse call
 func ParseGetSimpleNoExplodeArrayResponse(rsp *http.Response) (*GetSimpleNoExplodeArrayResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2494,7 +2620,7 @@ func ParseGetSimpleNoExplodeArrayResponse(rsp *http.Response) (*GetSimpleNoExplo
 
 // ParseGetSimpleNoExplodeObjectResponse parses an HTTP response from a GetSimpleNoExplodeObjectWithResponse call
 func ParseGetSimpleNoExplodeObjectResponse(rsp *http.Response) (*GetSimpleNoExplodeObjectResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2510,7 +2636,7 @@ func ParseGetSimpleNoExplodeObjectResponse(rsp *http.Response) (*GetSimpleNoExpl
 
 // ParseGetSimplePrimitiveResponse parses an HTTP response from a GetSimplePrimitiveWithResponse call
 func ParseGetSimplePrimitiveResponse(rsp *http.Response) (*GetSimplePrimitiveResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2526,7 +2652,7 @@ func ParseGetSimplePrimitiveResponse(rsp *http.Response) (*GetSimplePrimitiveRes
 
 // ParseGetStartingWithNumberResponse parses an HTTP response from a GetStartingWithNumberWithResponse call
 func ParseGetStartingWithNumberResponse(rsp *http.Response) (*GetStartingWithNumberResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -2548,6 +2674,9 @@ type ServerInterface interface {
 
 	// (GET /cookie)
 	GetCookie(ctx echo.Context, params GetCookieParams) error
+
+	// (GET /enums)
+	EnumParams(ctx echo.Context, params EnumParamsParams) error
 
 	// (GET /header)
 	GetHeader(ctx echo.Context, params GetHeaderParams) error
@@ -2617,7 +2746,7 @@ func (w *ServerInterfaceWrapper) GetContentObject(ctx echo.Context) error {
 
 	err = json.Unmarshal([]byte(ctx.Param("param")), &param)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshaling parameter 'param' as JSON")
+		return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshalling parameter 'param' as JSON")
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
@@ -2708,7 +2837,7 @@ func (w *ServerInterfaceWrapper) GetCookie(ctx echo.Context) error {
 		}
 		err = json.Unmarshal([]byte(decoded), &value)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshaling parameter 'co' as JSON")
+			return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshalling parameter 'co' as JSON")
 		}
 		params.Co = &value
 
@@ -2727,6 +2856,24 @@ func (w *ServerInterfaceWrapper) GetCookie(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.GetCookie(ctx, params)
+	return err
+}
+
+// EnumParams converts echo context to params.
+func (w *ServerInterfaceWrapper) EnumParams(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params EnumParamsParams
+	// ------------- Optional query parameter "enumPathParam" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "enumPathParam", ctx.QueryParams(), &params.EnumPathParam)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter enumPathParam: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.EnumParams(ctx, params)
 	return err
 }
 
@@ -2838,7 +2985,7 @@ func (w *ServerInterfaceWrapper) GetHeader(ctx echo.Context) error {
 
 		err = json.Unmarshal([]byte(valueList[0]), &XComplexObject)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshaling parameter 'X-Complex-Object' as JSON")
+			return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshalling parameter 'X-Complex-Object' as JSON")
 		}
 
 		params.XComplexObject = &XComplexObject
@@ -3085,7 +3232,7 @@ func (w *ServerInterfaceWrapper) GetQueryForm(ctx echo.Context) error {
 		var value ComplexObject
 		err = json.Unmarshal([]byte(paramValue), &value)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshaling parameter 'co' as JSON")
+			return echo.NewHTTPError(http.StatusBadRequest, "Error unmarshalling parameter 'co' as JSON")
 		}
 		params.Co = &value
 
@@ -3226,6 +3373,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/contentObject/:param", wrapper.GetContentObject, m...)
 	router.GET(baseURL+"/cookie", wrapper.GetCookie, m...)
+	router.GET(baseURL+"/enums", wrapper.EnumParams, m...)
 	router.GET(baseURL+"/header", wrapper.GetHeader, m...)
 	router.GET(baseURL+"/labelExplodeArray/:param", wrapper.GetLabelExplodeArray, m...)
 	router.GET(baseURL+"/labelExplodeObject/:param", wrapper.GetLabelExplodeObject, m...)
@@ -3250,25 +3398,26 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

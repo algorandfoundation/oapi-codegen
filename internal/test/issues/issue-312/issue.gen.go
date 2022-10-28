@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -24,30 +23,27 @@ import (
 
 // Error defines model for Error.
 type Error struct {
-	// Error code
+	// Code Error code
 	Code int32 `json:"code"`
 
-	// Error message
+	// Message Error message
 	Message string `json:"message"`
 }
 
 // Pet defines model for Pet.
 type Pet struct {
-	// The name of the pet.
+	// Name The name of the pet.
 	Name string `json:"name"`
 }
 
 // PetNames defines model for PetNames.
 type PetNames struct {
-	// The names of the pets.
+	// Names The names of the pets.
 	Names []string `json:"names"`
 }
 
-// ValidatePetsJSONBody defines parameters for ValidatePets.
-type ValidatePetsJSONBody = PetNames
-
 // ValidatePetsJSONRequestBody defines body for ValidatePets for application/json ContentType.
-type ValidatePetsJSONRequestBody = ValidatePetsJSONBody
+type ValidatePetsJSONRequestBody = PetNames
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -366,7 +362,7 @@ func (c *ClientWithResponses) ValidatePetsWithResponse(ctx context.Context, body
 
 // ParseGetPetResponse parses an HTTP response from a GetPetWithResponse call
 func ParseGetPetResponse(rsp *http.Response) (*GetPetResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
@@ -392,7 +388,7 @@ func ParseGetPetResponse(rsp *http.Response) (*GetPetResponse, error) {
 
 // ParseValidatePetsResponse parses an HTTP response from a ValidatePetsWithResponse call
 func ParseValidatePetsResponse(rsp *http.Response) (*ValidatePetsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err

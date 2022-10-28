@@ -4,17 +4,32 @@ import (
 	"bytes"
 	_ "embed"
 	"go/format"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
+	"github.com/algorand/oapi-codegen/pkg/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golangci/lint-1"
 	"github.com/stretchr/testify/assert"
 
 	examplePetstoreClient "github.com/algorand/oapi-codegen/examples/petstore-expanded"
 	examplePetstore "github.com/algorand/oapi-codegen/examples/petstore-expanded/echo/api"
+	"github.com/stretchr/testify/require"
 )
+
+const (
+	remoteRefFile = `https://raw.githubusercontent.com/deepmap/oapi-codegen/master/examples/petstore-expanded` +
+		`/petstore-expanded.yaml`
+	remoteRefImport = `github.com/deepmap/oapi-codegen/examples/petstore-expanded`
+)
+
+func checkLint(t *testing.T, filename string, code []byte) {
+	linter := new(lint.Linter)
+	problems, err := linter.Lint(filename, code)
+	assert.NoError(t, err)
+	assert.Len(t, problems, 0)
+}
 
 func TestExamplePetStoreCodeGeneration(t *testing.T) {
 
@@ -50,7 +65,7 @@ func TestExamplePetStoreCodeGeneration(t *testing.T) {
 	assert.Contains(t, code, "func (c *Client) FindPetByID(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error) {")
 
 	// Check that the property comments were generated
-	assert.Contains(t, code, "// Unique id of the pet")
+	assert.Contains(t, code, "// Id Unique id of the pet")
 
 	// Check that the summary comment contains newlines
 	assert.Contains(t, code, `// Deletes a pet by ID
@@ -58,10 +73,7 @@ func TestExamplePetStoreCodeGeneration(t *testing.T) {
 `)
 
 	// Make sure the generated code is valid:
-	linter := new(lint.Linter)
-	problems, err := linter.Lint("test.gen.go", []byte(code))
-	assert.NoError(t, err)
-	assert.Len(t, problems, 0)
+	checkLint(t, "test.gen.go", []byte(code))
 }
 
 func TestExamplePetStoreCodeGenerationWithUserTemplates(t *testing.T) {
@@ -106,7 +118,7 @@ func TestExamplePetStoreParseFunction(t *testing.T) {
 
 	cannedResponse := &http.Response{
 		StatusCode: 200,
-		Body:       ioutil.NopCloser(bytes.NewReader(bodyBytes)),
+		Body:       io.NopCloser(bytes.NewReader(bodyBytes)),
 		Header:     http.Header{},
 	}
 	cannedResponse.Header.Add("Content-type", "application/json")
@@ -185,10 +197,115 @@ type GetTestByNameResponse struct {
 	assert.Contains(t, code, "DeadSince *time.Time    `json:\"dead_since,omitempty\" tag1:\"value1\" tag2:\"value2\"`")
 
 	// Make sure the generated code is valid:
-	linter := new(lint.Linter)
-	problems, err := linter.Lint("test.gen.go", []byte(code))
+	checkLint(t, "test.gen.go", []byte(code))
+}
+
+func TestGoTypeImport(t *testing.T) {
+	packageName := "api"
+	opts := Configuration{
+		PackageName: packageName,
+		Generate: GenerateOptions{
+			EchoServer:   true,
+			Models:       true,
+			EmbeddedSpec: true,
+		},
+	}
+	spec := "test_specs/x-go-type-import-pet.yaml"
+	swagger, err := util.LoadSwagger(spec)
+	require.NoError(t, err)
+
+	// Run our code generation:
+	code, err := Generate(swagger, opts)
 	assert.NoError(t, err)
-	assert.Len(t, problems, 0)
+	assert.NotEmpty(t, code)
+
+	// Check that we have valid (formattable) code:
+	_, err = format.Source([]byte(code))
+	assert.NoError(t, err)
+
+	imports := []string{
+		`github.com/CavernaTechnologies/pgext`, // schemas - direct object
+		`myuuid "github.com/google/uuid"`,      // schemas - object
+		`github.com/lib/pq`,                    // schemas - array
+		`github.com/spf13/viper`,               // responses - direct object
+		`golang.org/x/text`,                    // responses - complex object
+		`golang.org/x/email`,                   // requestBodies - in components
+		`github.com/fatih/color`,               // parameters - query
+		`github.com/go-openapi/swag`,           // parameters - path
+		`github.com/jackc/pgtype`,              // direct parameters - path
+		`github.com/mailru/easyjson`,           // direct parameters - query
+		`github.com/subosito/gotenv`,           // direct request body
+	}
+
+	// Check import
+	for _, imp := range imports {
+		assert.Contains(t, code, imp)
+	}
+
+	// Make sure the generated code is valid:
+	checkLint(t, "test.gen.go", []byte(code))
+
+}
+
+func TestRemoteExternalReference(t *testing.T) {
+	packageName := "api"
+	opts := Configuration{
+		PackageName: packageName,
+		Generate: GenerateOptions{
+			Models: true,
+		},
+		ImportMapping: map[string]string{
+			remoteRefFile: remoteRefImport,
+		},
+	}
+	spec := "test_specs/remote-external-reference.yaml"
+	swagger, err := util.LoadSwagger(spec)
+	require.NoError(t, err)
+
+	// Run our code generation:
+	code, err := Generate(swagger, opts)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, code)
+
+	// Check that we have valid (formattable) code:
+	_, err = format.Source([]byte(code))
+	assert.NoError(t, err)
+
+	// Check that we have a package:
+	assert.Contains(t, code, "package api")
+
+	// Check import
+	assert.Contains(t, code, `externalRef0 "github.com/deepmap/oapi-codegen/examples/petstore-expanded"`)
+
+	// Check generated oneOf structure:
+	assert.Contains(t, code, `
+// ExampleSchema_Item defines model for ExampleSchema.Item.
+type ExampleSchema_Item struct {
+	union json.RawMessage
+}
+`)
+
+	// Check generated oneOf structure As method:
+	assert.Contains(t, code, `
+// AsExternalRef0NewPet returns the union data inside the ExampleSchema_Item as a externalRef0.NewPet
+func (t ExampleSchema_Item) AsExternalRef0NewPet() (externalRef0.NewPet, error) {
+`)
+
+	// Check generated oneOf structure From method:
+	assert.Contains(t, code, `
+// FromExternalRef0NewPet overwrites any union data inside the ExampleSchema_Item as the provided externalRef0.NewPet
+func (t *ExampleSchema_Item) FromExternalRef0NewPet(v externalRef0.NewPet) error {
+`)
+
+	// Check generated oneOf structure Merge method:
+	assert.Contains(t, code, `
+// FromExternalRef0NewPet overwrites any union data inside the ExampleSchema_Item as the provided externalRef0.NewPet
+func (t *ExampleSchema_Item) FromExternalRef0NewPet(v externalRef0.NewPet) error {
+`)
+
+	// Make sure the generated code is valid:
+	checkLint(t, "test.gen.go", []byte(code))
+
 }
 
 //go:embed test_spec.yaml

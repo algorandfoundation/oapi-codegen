@@ -13,6 +13,12 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Defines values for GetWithContentTypeParamsContentType.
+const (
+	Json GetWithContentTypeParamsContentType = "json"
+	Text GetWithContentTypeParamsContentType = "text"
+)
+
 // EveryTypeOptional defines model for EveryTypeOptional.
 type EveryTypeOptional struct {
 	ArrayInlineField     *[]int              `json:"array_inline_field,omitempty"`
@@ -87,28 +93,22 @@ type SimpleResponse struct {
 
 // GetWithArgsParams defines parameters for GetWithArgs.
 type GetWithArgsParams struct {
-	// An optional query argument
+	// OptionalArgument An optional query argument
 	OptionalArgument *int64 `form:"optional_argument,omitempty" json:"optional_argument,omitempty"`
 
-	// An optional query argument
+	// RequiredArgument An optional query argument
 	RequiredArgument int64 `form:"required_argument" json:"required_argument"`
 
-	// An optional query argument
+	// HeaderArgument An optional query argument
 	HeaderArgument *int32 `json:"header_argument,omitempty"`
 }
 
 // GetWithContentTypeParamsContentType defines parameters for GetWithContentType.
 type GetWithContentTypeParamsContentType string
 
-// CreateResourceJSONBody defines parameters for CreateResource.
-type CreateResourceJSONBody = EveryTypeRequired
-
-// CreateResource2JSONBody defines parameters for CreateResource2.
-type CreateResource2JSONBody = Resource
-
 // CreateResource2Params defines parameters for CreateResource2.
 type CreateResource2Params struct {
-	// Some query argument
+	// InlineQueryArgument Some query argument
 	InlineQueryArgument *int `form:"inline_query_argument,omitempty" json:"inline_query_argument,omitempty"`
 }
 
@@ -119,10 +119,10 @@ type UpdateResource3JSONBody struct {
 }
 
 // CreateResourceJSONRequestBody defines body for CreateResource for application/json ContentType.
-type CreateResourceJSONRequestBody = CreateResourceJSONBody
+type CreateResourceJSONRequestBody = EveryTypeRequired
 
 // CreateResource2JSONRequestBody defines body for CreateResource2 for application/json ContentType.
-type CreateResource2JSONRequestBody = CreateResource2JSONBody
+type CreateResource2JSONRequestBody = Resource
 
 // UpdateResource3JSONRequestBody defines body for UpdateResource3 for application/json ContentType.
 type UpdateResource3JSONRequestBody UpdateResource3JSONBody
@@ -169,36 +169,36 @@ type ServerInterfaceWrapper struct {
 	ErrorHandlerFunc   func(w http.ResponseWriter, r *http.Request, err error)
 }
 
-type MiddlewareFunc func(http.HandlerFunc) http.HandlerFunc
+type MiddlewareFunc func(http.Handler) http.Handler
 
 // GetEveryTypeOptional operation middleware
 func (siw *ServerInterfaceWrapper) GetEveryTypeOptional(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetEveryTypeOptional(w, r)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetSimple operation middleware
 func (siw *ServerInterfaceWrapper) GetSimple(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetSimple(w, r)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetWithArgs operation middleware
@@ -211,9 +211,6 @@ func (siw *ServerInterfaceWrapper) GetWithArgs(w http.ResponseWriter, r *http.Re
 	var params GetWithArgsParams
 
 	// ------------- Optional query parameter "optional_argument" -------------
-	if paramValue := r.URL.Query().Get("optional_argument"); paramValue != "" {
-
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "optional_argument", r.URL.Query(), &params.OptionalArgument)
 	if err != nil {
@@ -222,6 +219,7 @@ func (siw *ServerInterfaceWrapper) GetWithArgs(w http.ResponseWriter, r *http.Re
 	}
 
 	// ------------- Required query parameter "required_argument" -------------
+
 	if paramValue := r.URL.Query().Get("required_argument"); paramValue != "" {
 
 	} else {
@@ -256,15 +254,15 @@ func (siw *ServerInterfaceWrapper) GetWithArgs(w http.ResponseWriter, r *http.Re
 
 	}
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetWithArgs(w, r, params)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetWithReferences operation middleware
@@ -276,7 +274,7 @@ func (siw *ServerInterfaceWrapper) GetWithReferences(w http.ResponseWriter, r *h
 	// ------------- Path parameter "global_argument" -------------
 	var globalArgument int64
 
-	err = runtime.BindStyledParameter("simple", false, "global_argument", chi.URLParam(r, "global_argument"), &globalArgument)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "global_argument", runtime.ParamLocationPath, chi.URLParam(r, "global_argument"), &globalArgument)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "global_argument", Err: err})
 		return
@@ -285,21 +283,21 @@ func (siw *ServerInterfaceWrapper) GetWithReferences(w http.ResponseWriter, r *h
 	// ------------- Path parameter "argument" -------------
 	var argument Argument
 
-	err = runtime.BindStyledParameter("simple", false, "argument", chi.URLParam(r, "argument"), &argument)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "argument", runtime.ParamLocationPath, chi.URLParam(r, "argument"), &argument)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "argument", Err: err})
 		return
 	}
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetWithReferences(w, r, globalArgument, argument)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetWithContentType operation middleware
@@ -311,36 +309,36 @@ func (siw *ServerInterfaceWrapper) GetWithContentType(w http.ResponseWriter, r *
 	// ------------- Path parameter "content_type" -------------
 	var contentType GetWithContentTypeParamsContentType
 
-	err = runtime.BindStyledParameter("simple", false, "content_type", chi.URLParam(r, "content_type"), &contentType)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "content_type", runtime.ParamLocationPath, chi.URLParam(r, "content_type"), &contentType)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "content_type", Err: err})
 		return
 	}
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetWithContentType(w, r, contentType)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetReservedKeyword operation middleware
 func (siw *ServerInterfaceWrapper) GetReservedKeyword(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetReservedKeyword(w, r)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // CreateResource operation middleware
@@ -352,21 +350,21 @@ func (siw *ServerInterfaceWrapper) CreateResource(w http.ResponseWriter, r *http
 	// ------------- Path parameter "argument" -------------
 	var argument Argument
 
-	err = runtime.BindStyledParameter("simple", false, "argument", chi.URLParam(r, "argument"), &argument)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "argument", runtime.ParamLocationPath, chi.URLParam(r, "argument"), &argument)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "argument", Err: err})
 		return
 	}
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateResource(w, r, argument)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // CreateResource2 operation middleware
@@ -378,7 +376,7 @@ func (siw *ServerInterfaceWrapper) CreateResource2(w http.ResponseWriter, r *htt
 	// ------------- Path parameter "inline_argument" -------------
 	var inlineArgument int
 
-	err = runtime.BindStyledParameter("simple", false, "inline_argument", chi.URLParam(r, "inline_argument"), &inlineArgument)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "inline_argument", runtime.ParamLocationPath, chi.URLParam(r, "inline_argument"), &inlineArgument)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "inline_argument", Err: err})
 		return
@@ -388,9 +386,6 @@ func (siw *ServerInterfaceWrapper) CreateResource2(w http.ResponseWriter, r *htt
 	var params CreateResource2Params
 
 	// ------------- Optional query parameter "inline_query_argument" -------------
-	if paramValue := r.URL.Query().Get("inline_query_argument"); paramValue != "" {
-
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "inline_query_argument", r.URL.Query(), &params.InlineQueryArgument)
 	if err != nil {
@@ -398,15 +393,15 @@ func (siw *ServerInterfaceWrapper) CreateResource2(w http.ResponseWriter, r *htt
 		return
 	}
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateResource2(w, r, inlineArgument, params)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // UpdateResource3 operation middleware
@@ -418,36 +413,36 @@ func (siw *ServerInterfaceWrapper) UpdateResource3(w http.ResponseWriter, r *htt
 	// ------------- Path parameter "fallthrough" -------------
 	var pFallthrough int
 
-	err = runtime.BindStyledParameter("simple", false, "fallthrough", chi.URLParam(r, "fallthrough"), &pFallthrough)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "fallthrough", runtime.ParamLocationPath, chi.URLParam(r, "fallthrough"), &pFallthrough)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "fallthrough", Err: err})
 		return
 	}
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.UpdateResource3(w, r, pFallthrough)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetResponseWithReference operation middleware
 func (siw *ServerInterfaceWrapper) GetResponseWithReference(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var handler = func(w http.ResponseWriter, r *http.Request) {
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetResponseWithReference(w, r)
-	}
+	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		handler = middleware(handler)
 	}
 
-	handler(w, r.WithContext(ctx))
+	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
 type UnescapedCookieParamError struct {
@@ -463,16 +458,16 @@ func (e *UnescapedCookieParamError) Unwrap() error {
 	return e.Err
 }
 
-type UnmarshalingParamError struct {
+type UnmarshallingParamError struct {
 	ParamName string
 	Err       error
 }
 
-func (e *UnmarshalingParamError) Error() string {
-	return fmt.Sprintf("Error unmarshaling parameter %s as JSON: %s", e.ParamName, e.Err.Error())
+func (e *UnmarshallingParamError) Error() string {
+	return fmt.Sprintf("Error unmarshalling parameter %s as JSON: %s", e.ParamName, e.Err.Error())
 }
 
-func (e *UnmarshalingParamError) Unwrap() error {
+func (e *UnmarshallingParamError) Unwrap() error {
 	return e.Err
 }
 
