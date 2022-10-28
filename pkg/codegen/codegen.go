@@ -452,6 +452,7 @@ func GenerateTypesForResponses(t *template.Template, responses openapi3.Response
 				typeDef.TypeName = SchemaNameToTypeName(refType)
 			}
 			types = append(types, typeDef)
+			types = append(types, goType.GetAdditionalTypeDefs()...)
 		}
 	}
 	return types, nil
