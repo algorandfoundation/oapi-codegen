@@ -16,98 +16,49 @@ package middleware
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/algorand/oapi-codegen/pkg/testutil"
 )
 
-var testSchema = `openapi: "3.0.0"
-info:
-  version: 1.0.0
-  title: TestServer
-servers:
-  - url: http://deepmap.ai
-paths:
-  /resource:
-    get:
-      operationId: getResource
-      parameters:
-        - name: id
-          in: query
-          schema:
-            type: integer
-            minimum: 10
-            maximum: 100
-      responses:
-        '200':
-            content:
-              application/json:
-                schema:
-                  properties:
-                    name:
-                      type: string
-                    id:
-                      type: integer
-    post:
-      operationId: createResource
-      responses:
-        '204':
-          description: No content
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                name:
-                  type: string
-  /protected_resource:
-    get:
-      operationId: getProtectedResource
-      security:
-        - BearerAuth:
-          - someScope
-      responses:
-        '204':
-          description: no content
-  /protected_resource2:
-    get:
-      operationId: getProtectedResource
-      security:
-        - BearerAuth:
-          - otherScope
-      responses:
-        '204':
-          description: no content
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-`
+//go:embed test_spec.yaml
+var testSchema []byte
 
-func doGet(t *testing.T, e *echo.Echo, url string) *httptest.ResponseRecorder {
-	response := testutil.NewRequest().Get(url).WithAcceptJson().Go(t, e)
+func doGet(t *testing.T, e *echo.Echo, rawURL string) *httptest.ResponseRecorder {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		t.Fatalf("Invalid url: %s", rawURL)
+	}
+
+	response := testutil.NewRequest().Get(u.RequestURI()).WithHost(u.Host).WithAcceptJson().GoWithHTTPHandler(t, e)
 	return response.Recorder
 }
 
-func doPost(t *testing.T, e *echo.Echo, url string, jsonBody interface{}) *httptest.ResponseRecorder {
-	response := testutil.NewRequest().Post(url).WithJsonBody(jsonBody).Go(t, e)
+func doPost(t *testing.T, e *echo.Echo, rawURL string, jsonBody interface{}) *httptest.ResponseRecorder {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		t.Fatalf("Invalid url: %s", rawURL)
+	}
+
+	response := testutil.NewRequest().Post(u.RequestURI()).WithHost(u.Host).WithJsonBody(jsonBody).GoWithHTTPHandler(t, e)
 	return response.Recorder
 }
 
 func TestOapiRequestValidator(t *testing.T) {
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData([]byte(testSchema))
-	assert.NoError(t, err, "Error initializing swagger")
+	swagger, err := openapi3.NewLoader().LoadFromData(testSchema)
+	require.NoError(t, err, "Error initializing swagger")
 
 	// Create a new echo router
 	e := echo.New()
@@ -115,6 +66,9 @@ func TestOapiRequestValidator(t *testing.T) {
 	// Set up an authenticator to check authenticated function. It will allow
 	// access to "someScope", but disallow others.
 	options := Options{
+		ErrorHandler: func(c echo.Context, err *echo.HTTPError) error {
+			return c.String(err.Code, "test: "+err.Error())
+		},
 		Options: openapi3filter.Options{
 			AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {
 				// The echo context should be propagated into here.
@@ -126,6 +80,9 @@ func TestOapiRequestValidator(t *testing.T) {
 				for _, s := range input.Scopes {
 					if s == "someScope" {
 						return nil
+					}
+					if s == "unauthorized" {
+						return echo.ErrUnauthorized
 					}
 				}
 				return errors.New("forbidden")
@@ -234,4 +191,31 @@ func TestOapiRequestValidator(t *testing.T) {
 		assert.False(t, called, "Handler should not have been called")
 		called = false
 	}
+
+	e.GET("/protected_resource_401", func(c echo.Context) error {
+		called = true
+		return c.NoContent(http.StatusNoContent)
+	})
+	// Call a protected function without credentials
+	{
+		rec := doGet(t, e, "http://deepmap.ai/protected_resource_401")
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+		assert.Equal(t, "test: code=401, message=Unauthorized", rec.Body.String())
+		assert.False(t, called, "Handler should not have been called")
+		called = false
+	}
+}
+
+func TestGetSkipperFromOptions(t *testing.T) {
+
+	options := new(Options)
+	assert.NotNil(t, getSkipperFromOptions(options))
+
+	options = &Options{}
+	assert.NotNil(t, getSkipperFromOptions(options))
+
+	options = &Options{
+		Skipper: echomiddleware.DefaultSkipper,
+	}
+	assert.NotNil(t, getSkipperFromOptions(options))
 }
